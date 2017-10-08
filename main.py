@@ -72,37 +72,43 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     # apply 1x1 conv to preserve spatial information,
     # this would complete our ENCODER
     ly7_conv_1x1 = tf.layers.conv2d(vgg_layer7_out, num_classes, 1, 
-                                    padding='same',
+                                    padding='SAME',
+                                    kernel_initializer=tf.truncated_normal_initializer(stddev=0.01),
                                     kernel_regularizer= tf.contrib.layers.l2_regularizer(1e-3))
 
 # DECODER PORTION
     # On 1x1 conv, apply upsample / transpose 
     ly7_upsample_output = tf.layers.conv2d_transpose(ly7_conv_1x1, num_classes, 4, (2,2),
-                                                     padding='same',
+                                                     padding='SAME',
+                                                     kernel_initializer=tf.truncated_normal_initializer(stddev=0.01),
                                                      kernel_regularizer= tf.contrib.layers.l2_regularizer(1e-3))
 
     # Skip Connection to layer 4
     # 1x1 of Layer 4 to ensure shapes are same when added next
     ly4_conv_1x1 = tf.layers.conv2d(vgg_layer4_out, num_classes, 1, 
-                                    padding='same',
+                                    padding='SAME',
+                                    kernel_initializer=tf.truncated_normal_initializer(stddev=0.01),
                                     kernel_regularizer= tf.contrib.layers.l2_regularizer(1e-3))
 
     # Bit wise addition of last layer output & layer 4
     skp4_add = tf.add(ly7_upsample_output, ly4_conv_1x1)
     skp4_upsample_output = tf.layers.conv2d_transpose(skp4_add, num_classes, 4, (2,2),
                                                       padding='same',
+                                                      kernel_initializer=tf.truncated_normal_initializer(stddev=0.01),
                                                       kernel_regularizer= tf.contrib.layers.l2_regularizer(1e-3))
         
     # Skip Connection to layer 3
     # 1x1 of Layer 3 to ensure shapes are same when added next
     ly3_conv_1x1 = tf.layers.conv2d(vgg_layer3_out, num_classes, 1, 
-                                    padding='same',
+                                    padding='SAME',
+                                    kernel_initializer=tf.truncated_normal_initializer(stddev=0.01),
                                     kernel_regularizer= tf.contrib.layers.l2_regularizer(1e-3))
 
     # Bit wise addition of last layer output & layer 3
     skp3_add = tf.add(skp4_upsample_output, ly3_conv_1x1)
     skp3_upsample_output = tf.layers.conv2d_transpose(skp3_add, num_classes, 16, (8,8),
-                                                      padding='same',
+                                                      padding='SAME',
+                                                      kernel_initializer=tf.truncated_normal_initializer(stddev=0.01),
                                                       kernel_regularizer= tf.contrib.layers.l2_regularizer(1e-3))
 
     nn_last_layer = skp3_upsample_output
@@ -167,9 +173,11 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     print ("Training commenced ..")
     print()
 
+    start_time = time.clock()
+
     # Loop through Epocs
     for epoch in range(epochs):
-        print (" Executing Epoch {} ..".format(epoch+1))
+        print (" Executing Epoch {}/{} ..".format(epoch+1, epochs))
         
         # Loop through batches, batches are carved for memory optimization
         for image, label in get_batches_fn(batch_size):
@@ -177,10 +185,15 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
                                 feed_dict={input_image: image, 
                                            correct_label: label,
                                            keep_prob: 0.5,
-                                           learning_rate: 0.0009} )
+                                           learning_rate: 1e-4} )
 
-            print ("Loss per batch {:.3f}".format(loss))
-        print()
+            print ("  Loss per batch {:.3f}".format(loss))
+    
+    print()
+    end_time = time.clock()
+    train_time = end_time-start_time
+    print ("Total time for training: {} secs".format(train_time))
+    print()
 tests.test_train_nn(train_nn)
 
 
@@ -208,8 +221,8 @@ def run():
         #  https://datascience.stackexchange.com/questions/5224/how-to-prepare-augment-images-for-neural-network
 
         # TODO: Build NN using load_vgg, layers, and optimize function
-        epochs = 100
-        batch_size = 5
+        epochs = 50
+        batch_size = 16
 
         # Placeholders
         correct_label = tf.placeholder(tf.int32, [None, None, None, num_classes], name='correct_label')
