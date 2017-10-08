@@ -4,22 +4,22 @@
 In this project, we'll label the pixels of a road in images using a Fully Convolutional Network (FCN). 
 
 ### Network Architecture
-Pre-trained VGG-16 was used to transfer learn features, and improvise architecture to FCN by adding Encoder and Decoder layers subsequently.
+Pre-trained VGG-16 was used to transfer learned features, and improvise architecture to FCN by adding Encoder and Decoder layers subsequently.
 
-The approach is based on [publication] (https://people.eecs.berkeley.edu/~jonlong/long_shelhamer_fcn.pdf).
+The approach is based on [publication](https://people.eecs.berkeley.edu/~jonlong/long_shelhamer_fcn.pdf).
 
-Below repsentation demonstrates improvised VGG-16 Architetcure coverted to FCN.
+Below repsentation demonstrates improvised VGG-16 Architetcure improvised to FCN.
 
-Encoder:
+**Encoder:**
 - Layer 7 from VGG16 was supplemented with 1x1 Conv layer to preserve spatial information. This completes Encoder portion of FCN.
 
-Decoder:
+**Decoder:**
 - Upsampling/dec-conv was added to retrive full resilution image back.
 
-Skip Layers:
+**Skip Layers:**
 - Skip layers were to added to Layer 4 and Layer 3 of VGG, and subsequenty upsampling was applied to them to derive final output..
 
-![alt text](images/graph_architecture.png)
+    ![alt text](images/graph_architecture.png)
 
 ### Data
 Kitti Road Dataset was given to train the model. Below is quick reflection of original images and manually labled images used for training.
@@ -29,9 +29,9 @@ Kitti Road Dataset was given to train the model. Below is quick reflection of or
 ### Optimizer & Hyperparameters
 GPU is must for this training, on CPU it is feasible to run, however it would run for many hours, and any adjustments woould be quite daunting.
 
-Optimizer: Adam Optimizer has been used.
+**Optimizer:** Adam Optimizer has been used.
 
-Hyperparameters:
+**Hyperparameters:**
 - Learning Rate: 1e-4
 - Epochs: 50
 - Batch Size: 16 (Adjust the batch size based on available memory on GPU)
