@@ -7,9 +7,6 @@ import project_tests as tests
 import time
 
 
-# Get the log directory
-LOG_DIR = os.getcwd() + "/logs"
-
 # Check TensorFlow Version
 assert LooseVersion(tf.__version__) >= LooseVersion('1.0'), 'Please use TensorFlow version 1.0 or newer.  You are using {}'.format(tf.__version__)
 print('TensorFlow Version: {}'.format(tf.__version__))
@@ -170,11 +167,6 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     # TODO: Implement function
 
 # Add by Anshoo
-    #For tensorboard
-    summary_op = tf.summary.merge_all()
-    sum_writer = tf.summary.FileWriter(LOG_DIR + "/model" + "_" + str(time.time()))
-    sum_writer.add_graph(sess.graph)
-
     # Initialize Global Variables
     sess.run(tf.global_variables_initializer())
 
@@ -184,33 +176,19 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
 
     start_time = time.clock()
 
-    count = 1
-
     # Loop through Epocs
     for epoch in range(epochs):
-        print()
         print (" Executing Epoch {}/{} ..".format(epoch+1, epochs))
         
         # Loop through batches, batches are carved for memory optimization
         for image, label in get_batches_fn(batch_size):
-            if count % 20 == 0:
-                _, loss, tfsumm = sess.run( [train_op, cross_entropy_loss, summary_op],
-                                    feed_dict={input_image: image, 
+            _, loss = sess.run( [train_op, cross_entropy_loss],
+                                feed_dict={input_image: image, 
                                            correct_label: label,
                                            keep_prob: 0.5,
                                            learning_rate: 1e-4} )
-                # Write tensorboard summary 
-                sum_writer.add_summary(tfsumm, count)
-            else:
-                _, loss = sess.run( [train_op, cross_entropy_loss],
-                                    feed_dict={input_image: image, 
-                                           correct_label: label,
-                                           keep_prob: 0.5,
-                                           learning_rate: 1e-4} )
-
 
             print ("  Loss per batch {:.3f}".format(loss))
-            count += 1
     
     print()
     end_time = time.clock()
@@ -230,10 +208,6 @@ def run():
     # Download pretrained vgg model
     helper.maybe_download_pretrained_vgg(data_dir)
 
-    # Path for Log folder to store tensorboard logs
-    if os.path.exists(LOG_DIR + "/model*"):
-        os.remove(LOG_DIR + "/model*")
-
     # OPTIONAL: Train and Inference on the cityscapes dataset instead of the Kitti dataset.
     # You'll need a GPU with at least 10 teraFLOPS to train on.
     #  https://www.cityscapes-dataset.com/
@@ -249,7 +223,7 @@ def run():
 
         # TODO: Build NN using load_vgg, layers, and optimize function
         epochs = 50
-        batch_size = 5
+        batch_size = 16
 
         # Placeholders
         correct_label = tf.placeholder(tf.int32, [None, None, None, num_classes], name='correct_label')
