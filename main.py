@@ -208,7 +208,7 @@ def run():
         #  https://datascience.stackexchange.com/questions/5224/how-to-prepare-augment-images-for-neural-network
 
         # TODO: Build NN using load_vgg, layers, and optimize function
-        epochs = 6
+        epochs = 100
         batch_size = 5
 
         # Placeholders
